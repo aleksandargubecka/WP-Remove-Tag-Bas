@@ -1,4 +1,4 @@
-=== WP Remove Tag Base ===
+=== WP Remove Tag Bas ===
 Contributors: aleksandargubecka
 Tags: category base, category prefix, category slug
 Requires at least: 3.5
