@@ -28,11 +28,37 @@ if (!defined('ABSPATH')) {
 }
 
 if (!class_exists('Remove_Tag_Base')) {
-    class Remove_Tag_Base
+    /**
+     * Class Remove_Tag_Base
+     */
+    final class Remove_Tag_Base
     {
+        /**
+         * Hold an instance of the class
+         * @var null
+         */
+        protected static $instance = null;
 
-        function __construct()
+        public $nest = 41;
+
+        /**
+         * The singleton method
+         * @return null|Remove_Tag_Base
+         */
+        public static function getInstance()
         {
+            if (!isset(self::$instance)) {
+                self::$instance = new Remove_Tag_Base;
+            }
+            return self::$instance;
+        }
+
+        /**
+         * Remove_Tag_Base constructor.
+         */
+        private function __construct()
+        {
+            // on init check if flushing rewrite rules is needed
             add_action('init', array($this, 'flush_rules'), 999);
 
             foreach (array('created_post_tag', 'edited_post_tag', 'delete_post_tag') as $action) {
@@ -48,6 +74,9 @@ if (!class_exists('Remove_Tag_Base')) {
             register_deactivation_hook(__FILE__, array($this, 'on_activation_and_deactivation'));
         }
 
+        /**
+         * rtb_flush_rewrite_rules is setted when tag is created, updated or deleted
+         */
         public function flush_rules()
         {
             if (get_option('rtb_flush_rewrite_rules')) {
@@ -56,11 +85,20 @@ if (!class_exists('Remove_Tag_Base')) {
             }
         }
 
+        /**
+         * Called when tag is created, updated or deleted
+         */
         public function schedule_flush()
         {
             update_option('rtb_flush_rewrite_rules', 1);
         }
 
+        /**
+         * Filtering the tag link generation, because of changed url
+         * @filter tag_link
+         * @param $permalink
+         * @return mixed
+         */
         public function remove_tag_base($permalink)
         {
             $tag_base = get_option('tag_base') ? get_option('tag_base') : 'tag';
@@ -75,12 +113,24 @@ if (!class_exists('Remove_Tag_Base')) {
             return preg_replace('`' . preg_quote($tag_base, '`') . '`u', '', $permalink, 1);
         }
 
+        /**
+         * Adding rtb_tag_redirect param taken from url to query vars
+         * @filter query_vars
+         * @param $query_vars
+         * @return array
+         */
         public function update_query_vars($query_vars)
         {
             $query_vars[] = 'rtb_tag_redirect';
             return $query_vars;
         }
 
+        /**
+         * Redirecting to tag slug without tag base
+         * @filter request
+         * @param $query_vars
+         * @return mixed
+         */
         public function redirect_old_tag_url($query_vars)
         {
             if (isset($query_vars['rtb_tag_redirect'])) {
@@ -91,6 +141,11 @@ if (!class_exists('Remove_Tag_Base')) {
             return $query_vars;
         }
 
+        /**
+         *
+         * @filter tag_rewrite_rules
+         * @return array
+         */
         public function add_tag_rewrite_rules()
         {
             global $wp_rewrite;
@@ -103,6 +158,7 @@ if (!class_exists('Remove_Tag_Base')) {
                 $blog_prefix = '';
             }
 
+            // Adding rewrite rule for every tag
             foreach (get_tags(array('hide_empty' => false)) as $tag) {
                 $tag_nicename = $tag->slug;
 
@@ -121,11 +177,18 @@ if (!class_exists('Remove_Tag_Base')) {
             return $tag_rewrite;
         }
 
+        /**
+         * @hook  register_activation_hook
+         * @hook  register_deactivation_hook
+         */
         public function on_activation_and_deactivation()
         {
             flush_rewrite_rules();
         }
     }
 
-    new Remove_Tag_Base();
+    /**
+     * Plugins initialization
+     */
+    Remove_Tag_Base::getInstance();
 }
