@@ -3,7 +3,7 @@
 **Contributors:** aleksandargubecka
 **Tags:** category base, category prefix, category slug
 **Requires at least:** 3.5
-**Tested up to:** 4.7
+**Tested up to:** 4.7.2
 **Stable tag:** 1.0
 **License:** GPLv3 or later
 **License URI:** http://www.gnu.org/licenses/gpl-3.0.html
@@ -21,5 +21,4 @@ Removes the tag base slug from the category archive permalinks (URL's).
 
 ## Changelog
 
-- 1.0
-* Initial release
+- 1.0 - Initial release
